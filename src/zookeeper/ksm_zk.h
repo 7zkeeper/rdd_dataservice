@@ -15,7 +15,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <zookeeper/zookeeper.h>
-#include <zookeeper.jute.h>
+//#include <zookeeper.jute.h>
 #include <zookeeper/zookeeper_log.h>
 
 
@@ -105,6 +105,8 @@ public:
 	virtual void InitZK_cb();
 	int Connect(const char* hostport);
 	int Close();
+
+	int init(std::string iniFile);
 
 	bool IsConnected();
 	bool IsExpired();

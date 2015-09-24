@@ -11,12 +11,13 @@
 #include <vector>
 #include <map>
 #include <boost/thread/mutex.hpp>
-#include <mongo/client/dbclient.h>
+#include "mongo/client/dbclient.h"
 #include <semaphore.h>
 
 
 using mongo::BSONObj;
 using mongo::BSONObjBuilder;
+using mongo::BSONElement;
 using mongo::DBClientConnection;
 typedef enum _mongo_ret
 {
@@ -53,7 +54,7 @@ public:
   	int readIni(std::string file);
 	int init(std::string file);
 	int release();
-
+	int init();
 	virtual int connect();
 
 	DBClientConnection* getConn();

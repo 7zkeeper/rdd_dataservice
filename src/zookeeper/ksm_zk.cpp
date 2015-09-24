@@ -34,8 +34,6 @@ void KSM_ZK::InitZK_cb()
 	SetGetChild_cb(df_getchild_completion);	
 }
 
-	
-
 int KSM_ZK::Connect(const char* hostport)
 {
 	InitZK_cb();
@@ -63,6 +61,11 @@ int KSM_ZK::Close()
 		m_zh = NULL;
 	}
 	return ret;
+}
+
+int KSM_ZK::init(std::string iniFile)
+{
+	return 1;
 }
 
 bool KSM_ZK::IsConnected()

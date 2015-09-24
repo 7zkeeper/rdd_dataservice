@@ -18,6 +18,12 @@ typedef struct _data_task_
 	std::string task;
 }data_task;
 
+typedef struct _condition_
+{
+	std::vector<std::string> keyary;
+	std::vector<std::string> valueary;
+}condition;
+
 class datatask_node
 {
 public:
@@ -28,10 +34,12 @@ public:
 	virtual int init(std::string iniFile);
 	virtual int run();
 	virtual void parsepara(std::string redistask);
-
 	virtual int writeResult(std::string value);
 	virtual void  doTask(const RedisValue& value);
 private:
+	void updateUserStockCfg(std::string dbcoll,std::string uid,condition value);
+
+	int setArrayInfo(std::string dbcoll,std::string kv,std::string mkey,std::string arrkey,condition value);
 	redisworker m_redis;
 	em_mongodb  m_mongodb;
 	KSM_ZK		m_zookeeper;

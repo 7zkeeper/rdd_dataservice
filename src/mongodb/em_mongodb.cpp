@@ -6,6 +6,8 @@
 #include "em_mongodb.h"
 #include "../inifile/inifile.h"
 
+using namespace mongo;
+
 const unsigned int DEF_MONGOPORT = 30000;
 const unsigned int DEF_CONNECT = 10;
 const unsigned int DEF_TIMEOUT = 0;
@@ -80,6 +82,10 @@ int em_mongodb::init(std::string file)
 	return MDB_RET_SUCCESS;
 }
 
+int em_mongodb::init()
+{
+	return 1;
+}
 int em_mongodb::release()
 {
 	int ret = 0;
@@ -105,14 +111,14 @@ int em_mongodb::connect()
 	while(it != m_connpool.end())
 	{
 		std::string errmsg = "";
-/*		HostAndPort host(m_mongodbpara.ip,m_mongodbpara.port);
+		HostAndPort host(m_mongodbpara.ip,m_mongodbpara.port);
 		if(!(it->first->connect(host,errmsg)))		
 		{	
 			std::cerr<<"connect ip: " <<m_mongodbpara.ip<<std::endl;
 			std::cerr<<"port: "<<m_mongodbpara.port<<std::endl;
 			it->second = true;
 		}
-*/		sem_post(&m_jobsem);
+		sem_post(&m_jobsem);
 		it++;
 	}
 	pthread_mutex_unlock(&m_jobmux);
@@ -173,15 +179,14 @@ int em_mongodb::setvalue(std::string dbcoll,mongo::Query cond,BSONObj valObj,boo
 	return ret;
 }			
  	
-void em_mongodb::queryincrement(std::string dbcolli,BSONElement last)
+void em_mongodb::queryincrement(std::string dbcoll,BSONElement last)
 {
 	int ret = MDB_FAIL_QUERY;
 	DBClientConnection* pconn = getConn();
 	if(!pconn)
 		return ret;
-//	mongo::Query cond = mongo::Query().sort("$natural");
-//	BSONElement last = minKey.firstElement();
-	mongo::Query cond = QUERY("_id"<<GT<<last).sort("$natural");
+	mongo::Query cond = mongo::Query().sort("$natural");
+//	BSONElement last;// = minKey.firstElement();
 	while(1)
 	{
 		std::auto_ptr<mongo::DBClientCursor> cursor = 
@@ -201,7 +206,7 @@ void em_mongodb::queryincrement(std::string dbcolli,BSONElement last)
 			//do something here...
 			incrementfunc(obj);
 		}
-		cond = QUERY("_id"<<GT<<last).sort("$natural");			
+//		cond = mongo::Query("_id"<<BSON("$gt"<<last)).sort("$natural");			
 	}
 	boost::mutex::scoped_lock(m_iomux);
 	m_connpool[pconn] = false;

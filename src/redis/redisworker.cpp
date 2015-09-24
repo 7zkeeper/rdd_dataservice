@@ -20,12 +20,12 @@ redisworker::~redisworker()
 void redisworker::readIni(std::string file)
 {
 	std::string port,worker;
-	iniFile::IniFile ini;
+	inifile::IniFile ini;
 	ini.open(file.c_str());
 	
 	ini.getValue("REDIS","redis_ip",m_para.ip);
 	ini.getValue("REDIS","redis_port",port);
-	ini.getValue("REDIS","get_title",m_para.title);
+	ini.getValue("REDIS","get_title",m_para.task_title);
 	ini.getValue("REDIS","push_title",m_para.ret_title);
 	ini.getValue("REDIS","redis_worker",worker);
 	ini.getValue("REDIS","quit_cmd",m_para.quitcmd);
@@ -43,10 +43,15 @@ void redisworker::readIni(std::string file)
 //just for test
 void redisworker::setTitle(std::string title)
 {
-	m_para.title = title;
+	m_para.task_title = title;
 }
 
-void redisworker::init(task_callback& task_cb=defTaskFunc)
+const RedisAsyncClient& redisworker::getRedis() const
+{
+	return m_redis;
+}
+
+void redisworker::init(const task_callback& task_cb)
 {
 	m_pool.size_controller().resize(m_para.worker);
 	m_taskcb = task_cb;
@@ -67,7 +72,7 @@ void redisworker::onConnect(bool connected,const std::string& errmsg)
 	else
 	{
 		std::cout<<"Connected to redis."<<std::endl;
-		m_redis.command("BRPOP",m_para.title,"push:test2",0,boost::bind(&redisworker::onBrpop,this,_1));
+		m_redis.command("BRPOP",m_para.task_title,"push:test2",0,boost::bind(&redisworker::onBrpop,this,_1));
 	}
 }	
 
@@ -134,7 +139,7 @@ void redisworker::task(const RedisValue& value)
 		std::cout<<value.toArray()[0].toString()<<std::endl;
 		std::cout<<value.toArray()[1].toString()<<std::endl;
 		m_taskcb(value);
-		m_redis.command("BRPOP",m_para.title,"push:test2",0,boost::bind(&redisworker::onBrpop,this,_1));
+		m_redis.command("BRPOP",m_para.task_title,"push:test2",0,boost::bind(&redisworker::onBrpop,this,_1));
 		if(value.toArray()[1].toString()  == m_para.quitcmd)
 			m_ioService.stop();
 	}
@@ -144,10 +149,10 @@ void redisworker::task(const RedisValue& value)
 	}
 }
 
-void redisworker::setTaskFunc(task_callback task_cb)
-{
-	m_taskcb = defTaskFunc;
-}
+//void redisworker::setTaskFunc(task_callback task_cb)
+//{
+//	m_taskcb = defTaskFunc;
+//}
 
 std::string redisworker::getRetTitle()
 {

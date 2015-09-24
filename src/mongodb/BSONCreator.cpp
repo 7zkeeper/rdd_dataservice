@@ -121,27 +121,7 @@ BSONObj createCommonSub(std::string dbcoll,std::string kv,std::string mkey,std::
 	}
 	return finalbuild.obj();
 }
-/*
 
-typedef struct _tag_apptype_info
-{
-	unsigned int 	apptype;
-	int	flag;
-	std::string  	lastuid;
-	long long int 	lasttime;
-	long long int 	firsttime;
-	std::string 	appversion;
-}apptypeinfo;
-
-typedef struct _tag_mobile_apptypes
-{
-	std::string token;
-	std::vector<apptypeinfo>	apptypes;
-	long long int incrementID;
-	std::string osversion;
-	std::string comment;
-}mobile_apptypes;
-*/
 void parseMobileToken(BSONObj obj,mobile_apptypes& app)
 {
 	app.token = obj.getStringField("Token");
@@ -172,4 +152,34 @@ void parseMobileToken(BSONObj obj,mobile_apptypes& app)
 		appinfo.appversion = appobj.getStringField("appversion");
 		app.apptypes.push_back(appinfo);
 	}
+}
+
+int paraseUserStockCfg(BSONObj obj,std::vector<user_stock_cfg>& uscarray)
+{
+	std::string uid = obj.getStringField("Uid");
+	std::vector<BSONElement> elements = obj["stocks"].Array();
+	std::vector<BSONElement>::iterator it = elements.begin();
+	int count = 0;
+	for(; it != elements.end(); ++it)
+	{
+		BSONObj stock = it->Obj();
+		user_stock_cfg usc;
+		usc.uid = uid;
+		usc.stock = stock.getStringField("stock");
+		usc.bulletin = stock.getIntField("bulletin");
+		if(stock.getField("max_price").ok())
+			usc.max_price = stock.getField("max_price").Double();
+		else
+			usc.max_price = -0.111;
+		
+		if(stock.getField("min_price").ok())
+			usc.min_price = stock.getField("min_price").Double();
+		else
+			usc.min_price = -0.111;
+	
+		usc.run = stock.getIntField("run");
+		uscarray.push_back(usc);
+		count++;
+	}
+	return count ;
 }

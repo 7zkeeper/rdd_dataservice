@@ -46,10 +46,10 @@ public:
 	
 	virtual void task(const RedisValue& value);
 	virtual void readIni(std::string file);
-	virtual void init(task_callback& task_cb=defTaskFunc);
+	virtual void init(const task_callback& task_cb);
 	void setTitle(std::string title);	
-	void seTaskFunc(task_callback& task_cb = defTaskFunc);
-
+	void seTaskFunc(task_callback& task_cb);
+	const RedisAsyncClient& getRedis() const;
 	std::string getRetTitle();
 private:
 	boost::asio::io_service& m_ioService;
